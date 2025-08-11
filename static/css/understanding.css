@@ -1,0 +1,19 @@
+:root {
+    --primary-color: #af0808;
+    --secondary-color: #492222;
+    --background-color: #1a1010;
+    --text-primary: #ffffff;
+    --text-secondary: #e0e0e0;
+    --border-color: #3f2222;
+}
+
+body {
+    font-family: "Space Grotesk", "Noto Sans", sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+}
+
+.main-container section {
+    margin-top: 4rem;
+    margin-bottom: 4rem;
+}

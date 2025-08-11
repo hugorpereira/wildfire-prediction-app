@@ -1,0 +1,380 @@
+{% extends "layout.html" %} {% block title %}Prediction - Wildfire
+Intelligence{% endblock %} {% block header %}
+<link
+    rel="stylesheet"
+    href="{{url_for('static', filename='css/prediction.css')}}" />
+{% endblock %} {% block main %}
+<main
+    class="w-full max-w-4xl mx-auto flex-grow min-h-screen flex flex-col p-4 sm:p-6 lg:p-8">
+    <form method="POST">
+        <div
+            class="space-y-6 fire-glow-border bg-[var(--glass-bg)] p-6 md:p-8 rounded-2xl"
+            id="prediction-form">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="relative">
+                    <label
+                        class="block text-sm font-medium text-[var(--text-secondary)] mb-2"
+                        for="fire_year"
+                        >Fire Year
+                        <span class="tooltip text-gray-400 cursor-help"
+                            >(?)
+                            <span class="tooltiptext"
+                                >The year the fire is predicted to occur.
+                                Historical data up to the previous year is
+                                used.</span
+                            >
+                        </span>
+                    </label>
+                    <input
+                        class="w-full bg-[var(--surface-bg)] border border-[var(--border-color)] text-white rounded-lg p-3 focus:ring-2 focus:ring-[var(--brand-orange)] focus:border-[var(--brand-orange)] transition"
+                        id="fire_year"
+                        name="fire_year"
+                        placeholder="e.g., 2024"
+                        type="number"
+                        required />
+                </div>
+                <div class="relative">
+                    <label
+                        class="block text-sm font-medium text-[var(--text-secondary)] mb-2"
+                        for="fuel_type"
+                        >Fuel Type
+                        <span class="tooltip text-gray-400 cursor-help"
+                            >(?)
+                            <span class="tooltiptext"
+                                >The dominant type of combustible vegetation in
+                                the area.</span
+                            >
+                        </span>
+                    </label>
+                    <select
+                        class="w-full bg-[var(--surface-bg)] border border-[var(--border-color)] text-white rounded-lg p-3 focus:ring-2 focus:ring-[var(--brand-orange)] focus:border-[var(--brand-orange)] transition"
+                        id="fuel_type"
+                        name="fuel_type"
+                        required>
+                        <option value="">Select Fuel Type</option>
+                        <option value="C1">C1 (spruce-lichen woodland)</option>
+                        <option value="C2">C2 (boreal spruce)</option>
+                        <option value="C3">
+                            C3 (mature Jack or Lodgepole Pine)
+                        </option>
+                        <option value="C4">
+                            C4 (immature Jack or Lodgepole Pine)
+                        </option>
+                        <option value="C6">
+                            C6 (conifer plantation Deciduous)
+                        </option>
+                        <option value="C7">C7 (C7)</option>
+                        <option value="D1">
+                            D1 (leafless Aspen Mixedwood):
+                        </option>
+                        <option value="M1">
+                            M1 (boreal mixedwood - leafless)
+                        </option>
+                        <option value="M2">
+                            M2 (boreal mixedwood - green)
+                        </option>
+                        <option value="M3">
+                            M3 (dead Balsam fir mixedwood - leafless)
+                        </option>
+                        <option value="M4">
+                            M4 (dead Balsam fir mixedwood-green Slash)
+                        </option>
+                        <option value="O1a">O1a (matted grass)</option>
+                        <option value="O1b">O1b (standing grass)</option>
+                        <option value="S1">
+                            S1 (Jack or Lodgepole Pine slash)
+                        </option>
+                        <option value="S2">
+                            S2 (White Spruce - Balsam slash Grass)
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <label
+                        class="block text-sm font-medium text-[var(--text-secondary)]"
+                        >Latitude &amp; Longitude
+                        <span class="tooltip text-gray-400 cursor-help"
+                            >(?)
+                            <span class="tooltiptext"
+                                >Enter the specific coordinates for the
+                                prediction or use the interactive map to select
+                                a location.</span
+                            >
+                        </span>
+                    </label>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <input
+                        class="w-full bg-[var(--surface-bg)] border border-[var(--border-color)] text-white rounded-lg p-3 focus:ring-2 focus:ring-[var(--brand-orange)] focus:border-[var(--brand-orange)] transition"
+                        id="fire_location_latitude"
+                        name="fire_location_latitude"
+                        placeholder="Latitude e.g., 53.5444"
+                        type="text"
+                        required />
+                    <input
+                        class="w-full bg-[var(--surface-bg)] border border-[var(--border-color)] text-white rounded-lg p-3 focus:ring-2 focus:ring-[var(--brand-orange)] focus:border-[var(--brand-orange)] transition"
+                        id="fire_location_longitude"
+                        name="fire_location_longitude"
+                        placeholder="Longitude e.g., -113.4909"
+                        type="text"
+                        required />
+                </div>
+            </div>
+            <div class="relative">
+                <label
+                    class="block text-sm font-medium text-[var(--text-secondary)] mb-2"
+                    for="weather_conditions_over_fire"
+                    >Weather Conditions
+                    <span class="tooltip text-gray-400 cursor-help"
+                        >(?)
+                        <span class="tooltiptext"
+                            >The prevailing weather pattern at the time of
+                            prediction.</span
+                        >
+                    </span>
+                </label>
+                <select
+                    class="w-full bg-[var(--surface-bg)] border border-[var(--border-color)] text-white rounded-lg p-3 focus:ring-2 focus:ring-[var(--brand-orange)] focus:border-[var(--brand-orange)] transition"
+                    id="weather_conditions_over_fire"
+                    name="weather_conditions_over_fire"
+                    required>
+                    <option value="">Select Weather Conditions</option>
+                    <option value="CB Dry">Dry Cumulonimbus</option>
+                    <option value="CB Wet">Wet Cumulonimbus</option>
+                    <option value="Clear">Clear</option>
+                    <option value="Cloudy">Cloudy</option>
+                    <option value="Rainshowers">Rainshowers</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="relative">
+                    <label
+                        class="block text-sm font-medium text-[var(--text-secondary)] mb-2"
+                        for="general_cause_desc"
+                        >Cause of Fire
+                        <span class="tooltip text-gray-400 cursor-help"
+                            >(?)
+                            <span class="tooltiptext"
+                                >The suspected or known cause of ignition.</span
+                            >
+                        </span>
+                    </label>
+                    <select
+                        class="w-full bg-[var(--surface-bg)] border border-[var(--border-color)] text-white rounded-lg p-3 focus:ring-2 focus:ring-[var(--brand-orange)] focus:border-[var(--brand-orange)] transition"
+                        id="general_cause_desc"
+                        name="general_cause_desc"
+                        required>
+                        <option value="">Select Cause of Fire</option>
+                        <option>Forest Industry</option>
+                        <option>Incendiary</option>
+                        <option>Lightning</option>
+                        <option>Miscellaneous Known</option>
+                        <option>Oil & Gas Industry</option>
+                        <option>Other Industry</option>
+                        <option>Power Line Industry</option>
+                        <option>Prescribed Fire</option>
+                        <option>Railroad</option>
+                        <option>Recreation</option>
+                        <option>Resident</option>
+                        <option>Restart</option>
+                        <option>Undetermined</option>
+                    </select>
+                </div>
+                <div class="relative">
+                    <label
+                        class="block text-sm font-medium text-[var(--text-secondary)] mb-2"
+                        for="fire_origin"
+                        >Fire Origin
+                        <span class="tooltip text-gray-400 cursor-help"
+                            >(?)
+                            <span class="tooltiptext"
+                                >Description of fire origin location.</span
+                            >
+                        </span>
+                    </label>
+                    <select
+                        class="w-full bg-[var(--surface-bg)] border border-[var(--border-color)] text-white rounded-lg p-3 focus:ring-2 focus:ring-[var(--brand-orange)] focus:border-[var(--brand-orange)] transition"
+                        id="fire_origin"
+                        name="fire_origin"
+                        required>
+                        <option value="">Select Fire Origin</option>
+                        <option>DND</option>
+                        <option>Indian Reservation</option>
+                        <option>Metis Settlement</option>
+                        <option>Private Land</option>
+                        <option>Provincial Land</option>
+                        <option>Provincial Park</option>
+                        <option>Saskatchewan</option>
+                    </select>
+                </div>
+            </div>
+            <div class="relative">
+                <label
+                    class="block text-sm font-medium text-[var(--text-secondary)] mb-2"
+                    for="fire_type"
+                    >Fire Type
+                    <span class="tooltip text-gray-400 cursor-help"
+                        >(?)
+                        <span class="tooltiptext"
+                            >The primary manner in which the fire is expected to
+                            burn.</span
+                        >
+                    </span>
+                </label>
+                <div class="flex gap-4">
+                    <label
+                        class="flex-1 text-center py-2 px-3 bg-[var(--surface-bg)] border border-[var(--border-color)] rounded-lg text-sm text-white has-[:checked]:bg-[var(--brand-orange)] has-[:checked]:border-[var(--brand-orange)] transition cursor-pointer">
+                        <input
+                            checked=""
+                            class="sr-only"
+                            name="fire_type"
+                            type="radio"
+                            value="surface"
+                            required />
+                        Surface
+                    </label>
+                    <label
+                        class="flex-1 text-center py-2 px-3 bg-[var(--surface-bg)] border border-[var(--border-color)] rounded-lg text-sm text-white has-[:checked]:bg-[var(--brand-orange)] has-[:checked]:border-[var(--brand-orange)] transition cursor-pointer">
+                        <input
+                            class="sr-only"
+                            name="fire_type"
+                            type="radio"
+                            value="crown"
+                            required />
+                        Crown
+                    </label>
+                    <label
+                        class="flex-1 text-center py-2 px-3 bg-[var(--surface-bg)] border border-[var(--border-color)] rounded-lg text-sm text-white has-[:checked]:bg-[var(--brand-orange)] has-[:checked]:border-[var(--brand-orange)] transition cursor-pointer">
+                        <input
+                            class="sr-only"
+                            name="fire_type"
+                            type="radio"
+                            value="ground"
+                            required />
+                        Ground
+                    </label>
+                </div>
+            </div>
+            <input
+                class="w-full mt-6 py-3 px-6 bg-[var(--brand-yellow)] text-black text-base font-bold rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+                type="submit"
+                value="Submit for Prediction" />
+        </div>
+        {% if prediction or error %}
+        <div
+            class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-5">
+            <input
+                class="w-full sm:w-auto py-2 px-6 bg-[var(--surface-bg)] text-white text-sm font-bold rounded-lg hover:bg-opacity-70 border border-[var(--border-color)] transition-all cursor-pointer"
+                type="reset"
+                value="Reset / Predict Again">
+            </input>
+            <a
+                class="w-full sm:w-auto text-center py-2 px-6 bg-[var(--brand-orange)] text-white text-sm font-bold rounded-lg hover:opacity-90 transition-opacity"
+                href="{{ url_for('main') }}">
+                Back to WildWatchmen Home
+            </a>
+        </div>
+        {% endif %}
+    </form>
+    {% if prediction %}
+    <div
+        class="mt-8 space-y-6"
+        id="prediction-results">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div
+                class="bg-[var(--surface-bg)] p-5 rounded-lg border border-[var(--border-color)] text-center">
+                <p class="text-sm font-medium text-[var(--text-secondary)]">
+                    Predicted Fire Size Class
+                </p>
+                <p class="text-3xl font-bold text-white mt-1">
+                    {{prediction.fireClass}}
+                </p>
+            </div>
+            <div
+                class="bg-[var(--surface-bg)] p-5 rounded-lg border border-[var(--border-color)] text-center">
+                <p class="text-sm font-medium text-[var(--text-secondary)]">
+                    Range
+                </p>
+                <p class="text-3xl font-bold text-white mt-1">
+                    {{prediction.rangeHa}}
+                </p>
+            </div>
+            <div
+                class="bg-[var(--surface-bg)] p-5 rounded-lg border border-[var(--border-color)] text-center">
+                <p class="text-sm font-medium text-[var(--text-secondary)]">
+                    Fire Severity level
+                </p>
+                <p class="text-3xl font-bold text-white mt-1">
+                    {{prediction.severity}}
+                </p>
+            </div>
+        </div>
+        <!--
+        <div
+            class="bg-[var(--surface-bg)] p-6 rounded-lg border border-[var(--border-color)]">
+            <h3 class="text-xl font-bold text-white mb-4">
+                Fire Prediction Chart
+            </h3>
+            <div
+                class="h-64 bg-black/20 rounded-md flex items-center justify-center">
+                <p class="text-[var(--text-secondary)]">
+                    Chart will be displayed here upon prediction.
+                </p>
+            </div>
+        </div>
+        -->
+    </div>
+    <!--
+    <div
+        class="mt-10 rounded-lg overflow-hidden border border-[var(--border-color)]">
+        <iframe
+            allowfullscreen=""
+            height="450"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2545673.481698824!2d-118.97172943400192!3d54.726668422121886!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5305d4c42b9569a3%3A0x496907684ccc6119!2sAlberta!5e0!3m2!1sen!2sca!4v1690852585406!5m2!1sen!2sca"
+            style="border: 0"
+            width="100%"></iframe>
+    </div>
+    -->
+    {% endif %} {% if error %}
+    <div
+        class="mt-10 p-6 rounded-lg bg-[var(--surface-bg)] border border-[var(--border-color)] text-[var(--text-primary)]"
+        id="error">
+        ❌ Error: {{ error }}
+    </div>
+    {% endif %}
+</main>
+<script>
+    window.onload = function() {
+        {% if form_data %}
+        document.querySelector('[name="fire_year"]').value = '{{ form_data.fire_year or "" }}';
+        document.querySelector('[name="fire_location_latitude"]').value = '{{ form_data.fire_location_latitude or "" }}';
+        document.querySelector('[name="fire_location_longitude"]').value = '{{ form_data.fire_location_longitude or "" }}';
+
+        const fuelType = document.querySelector('[name="fuel_type"]');
+        if (fuelType) fuelType.value = '{{ form_data.fuel_type or "" }}';
+
+        const weatherConditions = document.querySelector('[name="weather_conditions_over_fire"]');
+        if (weatherConditions) weatherConditions.value = '{{ form_data.weather_conditions_over_fire or "" }}';
+
+        const generalCause = document.querySelector('[name="general_cause_desc"]');
+        if (generalCause) generalCause.value = '{{ form_data.general_cause_desc or "" }}';
+
+        const fireOrigin = document.querySelector('[name="fire_origin"]');
+        if (fireOrigin) fireOrigin.value = '{{ form_data.fire_origin or "" }}';
+
+        const fireTypeRadio = document.querySelector('[name="fire_type"][value="{{ form_data.fire_type or "" }}"]');
+        if (fireTypeRadio) fireTypeRadio.checked = true;
+        {% endif %}
+    };
+
+    {% if prediction %}
+        document.querySelector("#prediction-results").scrollIntoView();
+    {% elif error %}
+        document.querySelector("#error").scrollIntoView();
+    {% endif %}
+</script>
+{% endblock %}

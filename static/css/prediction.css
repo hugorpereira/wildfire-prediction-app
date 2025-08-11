@@ -1,0 +1,93 @@
+:root {
+    --primary-color: #ea4242;
+    --secondary-color: #472424;
+    --background-color: #1a1111;
+    --brand-orange: #FF5722;
+    --brand-yellow: #FFC107;
+    --surface-bg: #1E1E1E;
+    --text-primary: #ffffff;
+    --text-secondary: #e0b4b4;
+    --border-color: #653434;
+    --glass-bg: #1E1E1EB3;
+    --glow-start: #FF572280;
+    --glow-end: #FFC10780;
+
+    /*
+    --primary-color: #ea4242;
+    --secondary-color: #472424;
+    --brand-orange: #FF5722;
+    --brand-yellow: #FFC107;
+    --dark-bg: #121212;
+    --surface-bg: #1E1E1E;
+    --text-primary: #FFFFFF;
+    --text-secondary: #B0B0B0;
+    --border-color: #333333;
+    */
+   
+}
+
+body {
+    font-family: 'Space Grotesk', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    overflow-x: hidden;
+}
+
+.fire-glow-border {
+    border: 1px solid transparent;
+    border-radius: 1rem;
+    position: relative;
+    background-clip: padding-box;
+    backdrop-filter: blur(10px);
+}
+
+.fire-glow-border::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    z-index: -1;
+    margin: -2px;
+    border-radius: inherit; 
+    background: linear-gradient(90deg, var(--glow-start), var(--glow-end));
+}
+
+.heat-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at bottom, rgba(255, 87, 34, 0.15) 0%, rgba(18, 18, 18, 0) 70%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: var(--surface-bg);
+    color: var(--text-primary);
+    text-align: left;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+    border: 1px solid var(--border-color);
+    pointer-events: none;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}

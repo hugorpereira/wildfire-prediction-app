@@ -1,0 +1,6 @@
+*.zip
+*.log
+data_analysis/.ipynb_checkpoints/
+data_analysis/data/
+appenv/*
+__pycache__/*

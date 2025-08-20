@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 # model = joblib.load('tuned_dt_wildfire.pkl')
 model = load_model("tuned_dt_wildfire")
-df_org = pd.read_csv('df_wildfire_cleaned.csv')
+df_org = pd.read_csv('https://raw.githubusercontent.com/hugorpereira/wildfire-prediction/refs/heads/main/data_analysis/df_wildfire_cleaned.csv') #nrows=5000
 df_org.drop(columns=['fire_year','general_cause_desc','fire_type','weather_conditions_over_fire','fuel_type'], axis=1, inplace=True)
 
 @app.route('/')
@@ -42,28 +42,13 @@ def terms():
 @app.route('/prediction', methods=['GET', 'POST'] )
 def prediction():
     if request.method == 'GET':
-        # alberta_coords = [53.9333, -116.5765]
-        # m = folium.Map(location=alberta_coords, zoom_start=6)
-
-        # folium.Marker(
-        #     location=alberta_coords,
-        #     tooltip="Alberta"
-        # ).add_to(m)
-
-        # # full_html = m.get_root().render()
-
-        # map_html = m._repr_html_()
-        # [53.9333, -116.5765]
-        # folium_map = folium.Map(location=[53.9333, -116.5765], zoom_start=3)
-        folium_map = folium.Map(location=[df_org.fire_location_latitude.mean(), df_org.fire_location_longitude.mean()], zoom_start=5)
-
+        
         severity_map = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5}
         df_org["weight"] = df_org["size_class"].map(severity_map)
-
         heat_data = df_org[["fire_location_latitude", "fire_location_longitude", "weight"]].values.tolist()
 
+        folium_map = folium.Map(location=[df_org.fire_location_latitude.mean(), df_org.fire_location_longitude.mean()], zoom_start=5)
         HeatMap(heat_data, radius=20, blur=15).add_to(folium_map)
-
         folium_map = folium_map._repr_html_()
 
         return render_template('prediction.html', folium_map=folium_map)
@@ -87,12 +72,7 @@ def prediction():
             # probabilities = model.predict_proba(df)
             # confidence = max(probabilities[0]) * 100
 
-            zoom_size = 12 if classData["fireClass"] == 'E' or classData["fireClass"] == 'D' else 16
-
-            folium_map = folium.Map(location=[data['fire_location_latitude'], data['fire_location_longitude']], zoom_start=zoom_size)
-            folium.Marker([data['fire_location_latitude'], data['fire_location_longitude']], popup="Location").add_to(folium_map)
-            folium.Circle([data['fire_location_latitude'], data['fire_location_longitude']], radius=classData['radius'], color="red", fill=True, fill_opacity=0.3).add_to(folium_map)
-
+            # Process variants
             variation_dict = {
                 "fire_origin": ['DND','Indian Reservation','Metis Settlement','Private Land','Provincial Land','Provincial Park','Saskatchewan'],
                 "fuel_type": ['C1','C2','C3','C4','C6','C7','D1','M1','M2','M3','M4','O1a','O1b','S1','S2'],
@@ -111,12 +91,10 @@ def prediction():
                 dfs.append(expanded)
             
             complement_df = pd.concat(dfs, ignore_index=True)
-
             result = predict_model(model, complement_df)
             result = result[result['prediction_label'] != prediction[0]]
 
             filtered_results = {}
-
             if not result.empty:
                 grouped_results = {
                     feature: df_group
@@ -126,46 +104,46 @@ def prediction():
                 for feature, df_group in grouped_results.items():
                     filtered_results[feature] = df_group[[feature, "prediction_label"]]
 
-            # result.drop(['fire_year','general_cause_desc','fire_type','weather_conditions_over_fire','fuel_type','fire_location_latitude', 'fire_location_longitude','prediction_score'], axis=1, inplace=True)
-            # fire_origin_table = result.to_html(classes="table", index=False)
-            # return render_template("resultados.html", tabela=tabela_html)
-            # for feature, data in filtered_results.items():
-            #     print(feature)
-            #     for index, row in data.iterrows():
-            #         print(row)
+            # Process critical cases
+            variation_dict_reduced = {
+                "fire_origin": ['Indian Reservation','Private Land','Provincial Land','Provincial Park'],
+                "fuel_type": ['C1','C2'],
+                "weather_conditions_over_fire": ['CB Dry','Clear','Cloudy'],
+                "general_cause_desc": ['Lightning','Power Line Industry','Resident','Undetermined'],
+                "fire_type": ['Surface', 'Crown']
+            }
 
-            all_combinations = list(itertools.product(*variation_dict.values()))
-
-            df_variations = pd.DataFrame(all_combinations, columns=variation_dict.keys())
-
-            # for col, val in df.items():
-            #     df_variations[col] = val.iloc[0]
-
+            all_combinations = list(itertools.product(*variation_dict_reduced.values()))
+            df_variations = pd.DataFrame(all_combinations, columns=variation_dict_reduced.keys())
             df_variations["fire_location_latitude"] = data['fire_location_latitude']
             df_variations["fire_location_longitude"] = data['fire_location_longitude']
             df_variations["fire_year"] = data['fire_year']
 
             result_complement = predict_model(model, df_variations)
-
             critical_sorted = {}
             if not result_complement.empty:
-                critical = result_complement[result_complement["prediction_label"].isin(["E", "D", "C"])]
+                critical = result_complement[result_complement["prediction_label"].isin(["E", "D"])]
 
-                severity_order = {"E": 0, "D": 1, "C": 2}
+                severity_order = {"E": 0, "D": 1}
                 critical["severity_rank"] = critical["prediction_label"].map(severity_order)
                 critical_sorted = critical.sort_values("severity_rank").drop(columns="severity_rank")
 
                 critical_sorted.drop(columns=['fire_location_latitude', 'fire_location_longitude', 'fire_year', 'prediction_score'], inplace=True)
                 critical_list = critical_sorted.to_dict(orient="records")
-                #critical_html = critical_sorted.to_html(index=False, classes="table", justify="left", border=1)
 
+            # Create map
+            zoom_size = 12 if classData["fireClass"] == 'E' or classData["fireClass"] == 'D' else 16
+            folium_map = folium.Map(location=[data['fire_location_latitude'], data['fire_location_longitude']], zoom_start=zoom_size)
+            folium.Marker([data['fire_location_latitude'], data['fire_location_longitude']], popup="Location").add_to(folium_map)
+            folium.Circle([data['fire_location_latitude'], data['fire_location_longitude']], radius=classData['radius'], color="red", fill=True, fill_opacity=0.3).add_to(folium_map)
+
+            # Add Heatmap
             severity_map = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5}
             df_org["weight"] = df_org["size_class"].map(severity_map)
-
             heat_data = df_org[["fire_location_latitude", "fire_location_longitude", "weight"]].values.tolist()
-
             HeatMap(heat_data, radius=20, blur=15).add_to(folium_map)
-
+            
+            # Get map html
             folium_map = folium_map._repr_html_()
             
             return render_template('prediction.html', 

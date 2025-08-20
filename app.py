@@ -7,6 +7,7 @@ import folium
 from folium.plugins import HeatMap
 import math
 import itertools
+import numpy as np
 
 app = Flask(__name__)
 
@@ -61,6 +62,13 @@ def prediction():
             # Create a dataframe from form data
             df = pd.DataFrame([data])
 
+            df['fire_lat_sin'] = np.sin(np.radians(float(df['fire_location_latitude'])))
+            df['fire_lat_cos'] = np.cos(np.radians(float(df['fire_location_latitude'])))
+            df['fire_lon_sin'] = np.sin(np.radians(float(df['fire_location_longitude'])))
+            df['fire_lon_cos'] = np.cos(np.radians(float(df['fire_location_longitude'])))
+
+            df.drop(columns=['fire_location_latitude','fire_location_longitude'], axis=1, inplace=True)
+
             # Execute prediction
             # prediction = model.predict(df)
             prediction_df = predict_model(model, data=df)
@@ -106,18 +114,24 @@ def prediction():
 
             # Process critical cases
             variation_dict_reduced = {
-                "fire_origin": ['Indian Reservation','Private Land','Provincial Land','Provincial Park'],
+                "fire_origin": ['Indian Reservation','Provincial Land'],
                 "fuel_type": ['C1','C2'],
                 "weather_conditions_over_fire": ['CB Dry','Clear','Cloudy'],
-                "general_cause_desc": ['Lightning','Power Line Industry','Resident','Undetermined'],
+                "general_cause_desc": ['Lightning','Power Line Industry','Resident'],
                 "fire_type": ['Surface', 'Crown']
             }
 
             all_combinations = list(itertools.product(*variation_dict_reduced.values()))
             df_variations = pd.DataFrame(all_combinations, columns=variation_dict_reduced.keys())
-            df_variations["fire_location_latitude"] = data['fire_location_latitude']
-            df_variations["fire_location_longitude"] = data['fire_location_longitude']
-            df_variations["fire_year"] = data['fire_year']
+            # df_variations["fire_location_latitude"] = data['fire_location_latitude']
+            # df_variations["fire_location_longitude"] = data['fire_location_longitude']
+            # df_variations["fire_year"] = data['fire_year']
+
+            df_variations['fire_lat_sin'] = np.sin(np.radians(float(data['fire_location_latitude'])))
+            df_variations['fire_lat_cos'] = np.cos(np.radians(float(data['fire_location_latitude'])))
+            df_variations['fire_lon_sin'] = np.sin(np.radians(float(data['fire_location_longitude'])))
+            df_variations['fire_lon_cos'] = np.cos(np.radians(float(data['fire_location_longitude'])))
+
 
             result_complement = predict_model(model, df_variations)
             critical_sorted = {}
@@ -128,7 +142,7 @@ def prediction():
                 critical["severity_rank"] = critical["prediction_label"].map(severity_order)
                 critical_sorted = critical.sort_values("severity_rank").drop(columns="severity_rank")
 
-                critical_sorted.drop(columns=['fire_location_latitude', 'fire_location_longitude', 'fire_year', 'prediction_score'], inplace=True)
+                critical_sorted.drop(columns=['prediction_score'], inplace=True)
                 critical_list = critical_sorted.to_dict(orient="records")
 
             # Create map

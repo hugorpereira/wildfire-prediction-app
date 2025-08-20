@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Mapa</title>
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    </head>
+    <body style="margin: 0">
+        <div
+            id="map"
+            style="width: 100%; height: 88vh"></div>
+        <div
+            class="modal-footer"
+            style="
+                height: 12vh;
+                display: flex;
+                flex-direction: row-reverse;
+                align-items: center;
+                align-content: end;
+            ">
+            <button
+                id="closeButton"
+                style="
+                    background-color: rgb(57, 57, 224);
+                    color: white;
+                    width: 100%;
+                    border-radius: 4px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    padding: 10px;
+                    border: 1px solid white;
+                ">
+                Confirm
+            </button>
+        </div>
+
+        <script>
+            //[51.0447, -114.0719] | [53.9333, -116.5765]
+            var map = L.map("map").setView([51.0447, -114.0719], 10);
+            let closeButton = document.getElementById("closeButton");
+
+            var latitude;
+            var longitude;
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "© OpenStreetMap",
+            }).addTo(map);
+
+            var marker;
+
+            map.on("click", function (e) {
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                marker = L.marker(e.latlng).addTo(map);
+
+                latitude = e.latlng.lat;
+                longitude = e.latlng.lng;
+            });
+
+            closeButton.addEventListener("click", function (e) {
+                window.parent.postMessage(
+                    {
+                        type: "coords",
+                        lat: latitude,
+                        lng: longitude,
+                    },
+                    "*"
+                );
+            });
+        </script>
+    </body>
+</html>
